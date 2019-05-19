@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ibm-mq="http://www.mulesoft.org/schema/mule/ibm-mq" xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+http://www.mulesoft.org/schema/mule/ibm-mq http://www.mulesoft.org/schema/mule/ibm-mq/current/mule-ibm-mq.xsd">
+	<flow name="postEmployeeRecord" doc:id="268eec21-fcb1-4df2-ab1a-16514b518306" >
+		<http:listener doc:name="ToInsertRecordToDB" doc:id="dc379b44-c781-4447-8c63-f9ae22c19cd9" config-ref="HTTP_Listener_config" path="/postEmployeeRecord"/>
+		<logger level="INFO" doc:name="Logger" doc:id="ecf7e973-b5f9-4f32-be2c-33bf2ec9e7bb" message="FIRST NAME ==#[payload.Identification.FirstName]"/>
+		<db:insert doc:name="InsertEmployeeRecordIdentificationAddressCommunicationTables" doc:id="0bfa2150-c310-4125-a534-fe7de4180ecb" config-ref="Database_Config">
+			<db:sql>INSERT INTO identification (FirstName, LastName, DOB, Gender, Title) VALUES (:FirstName, :LastName, :DOB, :Gender, :Title);
+INSERT INTO address (AddType, Addnumber, Street, Unit, City, State, zipcode, EmpID) VALUES (:AddType, :Addnumber, :Street, :Unit, :City, :State, :zipcode, LAST_INSERT_ID());</db:sql>
+			<db:input-parameters><![CDATA[#[{'FirstName':payload.Identification.FirstName,'LastName':payload.Identification.LastName,'DOB':payload.Identification.DOB as Date {format: 'MM/dd/yyyy'} ,'Gender':payload.Identification.Gender,'Title':payload.Identification.Title
+,'AddType':payload.Identification.AddType,'Addnumber':payload.Identification.Addnumber,'Street':payload.Identification.Street,'Unit':payload.Identification.Unit,'City':payload.Identification.City,'State':payload.Identification.State,'zipcode':payload.zipcode }]]]></db:input-parameters>
+		</db:insert>
+		<logger level="INFO" doc:name="EmployeeRecordInserted" doc:id="d8ee01d2-f877-4044-900c-2557f3c5661e" message="#[payload]"/>
+	</flow>
+	<flow name="getEmployeeRecord" doc:id="7f4f0dbb-bb05-43fc-ac99-7d38e65be288" >
+		<http:listener doc:name="RetrieveEmployeeRecord" doc:id="292fd8e2-274e-490d-aa75-318cc5e4831c" config-ref="HTTP_Listener_config" path="/getEmployeeRecord"/>
+		<db:select doc:name="SelectputEmployeeRecordIdentificationAddressCommunicationTables" doc:id="c2f0e867-9127-443b-89ae-366fb366a67c" config-ref="Database_Config">
+					<db:sql>SELECT identification.FirstName, identification.LastName, identification.DOB, identification.Gender, identification.Title, address.addtype, address.number, address.Street, address.Unit, address.City, address.State, address.zipcode,Communication.commtype,Communication.value,Communication.preferred 
+FROM identification inner join address on address.EmpId = identification.EmpID inner join Communication on Communication.EmpId = identification.EmpId;</db:sql>
+					<db:input-parameters><![CDATA[#[{'EmpId':attributes.queryParams.EmpId}]]]></db:input-parameters>
+				</db:select>
+		<ee:transform doc:name="EmployeeRecordRetrieved" doc:id="b6774565-9dea-42ed-99d9-a2221f8aa87d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="putEmployeeRecord" doc:id="934ca1ff-ac3a-4de9-9fd8-4d9c78ff2ae5" >
+		<http:listener doc:name="UpdateEmployeeData" doc:id="46bccdd4-e816-436a-aa51-75bd6ed9be8f" config-ref="HTTP_Listener_config" path="/putEmployeeRecord"/>
+		<db:update doc:name="UpdateEmployeeRecordIdentificationAddressCommunicationTables" doc:id="690ef81c-7f20-4be4-8cca-cd0e49159255" config-ref="Database_Config">
+			<db:sql >UPDATE identification,Communication SET identification.FirstName=a,Communication.value=b
+WHERE identification.EmpId=Communication.EmpId</db:sql>
+		</db:update>
+		<logger level="INFO" doc:name="EmployeeRecordUpdated" doc:id="ec79d801-7b56-461f-b720-2a7cdf7cb14f" />
+	</flow>
+	<flow name="deleteEmployeeRecords" doc:id="e7029f81-ba32-42d4-a11f-0ec0c37af184" >
+		<http:listener doc:name="DeleteEmployeeData" doc:id="1093ef71-e388-4879-ae9c-4393baf4c593" config-ref="HTTP_Listener_config" path="/deleteEmployeeRecords"/>
+		<db:delete doc:name="DeleteEmployeeRecordIdentificationAddressCommunicationTables" doc:id="c05c8eb2-066b-476c-b5dd-9ef37032162f" config-ref="Database_Config">
+			<db:sql>Delete from identification where EmpId=:EmpId</db:sql>
+		</db:delete>
+		<logger level="INFO" doc:name="EmployeeRecordDeleted" doc:id="def1a586-72fc-4359-8a7b-b3331bba4376" />
+	</flow>
+</mule>

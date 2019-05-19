@@ -1,0 +1,10 @@
+http:
+  Host: "localhost"
+  Port: "8081"
+DataBase:
+  Host: "localhost"
+  Port: "3306"
+  User: "root"
+  Password: "34fekadesabu"
+  Database: "MS3Employee"
+  
