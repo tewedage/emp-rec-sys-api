@@ -1,0 +1,61 @@
+SQL STATMENTS
+
+Schema Name MS3EmpContact_schema
+
+
+EmpIdentification
+create table EmpIdentification (EmpID int not null primary key ,FirstName varchar(15),LastName varchar(15),DOB date,Gender char(1),Title varchar(15));
+
+EmpAddress
+create table EmpAddress (Addtype varchar(15),number int,street varchar(20), Unit varchar(15),City varchar(15),State char(2),zipcode char(5),EmpID int, foreign key (EmpID) references EmpIdentification (EmpID));
+
+EmpCommunication
+create table EmpCommunication (comtype varchar(10),value varchar(15), preferred varchar(10), EmpId int,foreign key (EmpID) references EmpIdentification (EmpID));
+
+=
+
+
+==========INSERT EmpIdentification======
+
+
+INSERT INTO EmpIdentification (EmpID,FirstName, LastName, DOB, Gender, Title) VALUES (:EmpID,:FirstName, :LastName, :DOB, :Gender, :Title)
+
+#[{'EmpID':payload.Identification.EmpID,'FirstName':payload.Identification.FirstName,'LastName':payload.Identification.LastName,'DOB':payload.Identification.DOB as Date {format: 'MM/dd/yyyy'} ,'Gender':payload.Identification.Gender,'Title':payload.Identification.Title
+}]
+
+=============INSERT EmpAddress=========
+
+INSERT INTO EmpAddress (Addtype,number,street,City,State,zipcode,EmpID) VALUES (:Addtype,:number,street,:City,:State,:zipcode,:EmpID)
+#[{'Addtype':payload.Address.Addtype,'number':payload.Address.number,'street':payload.Address.street,'Unit':payload.Address.Unit,'City':payload.Address.City,'State':payload.Address.State,'zipcode':payload.Address.zipcode,'EmpID':payload.Address.EmpID
+}]
+
+
+========INSERT  EmpCommunication=====
+
+ INSERT INTO EmpCommunication (comtype,value,preferred,EmpID) VALUES (:comtype,:value,:preferred,:EmpID)
+
+#[{'comtype':payload.EmpCommunication.comtype,'value':payload.EmpCommunication.value,'preferred':payload.EmpCommunication.preferred,'EmpID':payload.EmpCommunication.EmpID }]
+
+
+
+
+========Get Record from all 3 tables=====
+
+SELECT EmpIdentification.FirstName, EmpIdentification.LastName, EmpIdentification.DOB, EmpIdentification.Gender, EmpIdentification.Title, EmpAddress.Addtype, EmpAddress.number, EmpAddress.Street, EmpAddress.Unit,EmpAddress.City, EmpAddress.State, EmpAddress.zipcode, EmpCommunication.comtype, EmpCommunication.value,EmpCommunication.preferred FROM EmpIdentification inner join EmpAddress on EmpAddress.EmpID = EmpIdentification.EmpID inner join EmpCommunication on EmpCommunication.EmpID = EmpIdentification.EmpID where EmpIdentification.EmpID =:EmpID
+
+
+==============Update Tables==================
+
+
+UPDATE Empidentification,EmpCommunication,EmpAddress Set Empidentification.FirstName=:FirstName,EmpAddress.street=:street,EmpCommunication.value=:email
+where Empidentification.EmpID=EmpCommunication.EmpID= EmpAddress.EmpID and EmpCommunication.comtype=:comtype;
+
+#[{'FirstName':attributes.uriParams.Identification.FirstName,'street':uriParams.Address.street,'value':uriParams.Communication.value,'EmpId':uriParams.EmpId}]
+
+
+==================Delete Tables==================
+
+DELETE EmpAddress, EmpCommunication FROM EmpIdentification INNER JOIN EmpAddress on EmpAddress.EmpID = EmpIdentification.EmpID INNER JOIN EmpCommunication on EmpCommunication.EmpID = EmpIdentification.EmpID  WHERE EmpID =:EmpID
+
+
+#[{'EmpID':attributes.uriParams.EmpID}]
