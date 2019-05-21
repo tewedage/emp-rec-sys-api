@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="GetEmployeeRecord" doc:id="0be0cf03-7e0b-4d75-92c3-cd561cbbbb57" >
+		<db:select doc:name="Select" doc:id="27c2541c-fd9b-4524-986f-486d64896b05" config-ref="Database_Config">
+			<db:sql >SELECT EmpIdentification.FirstName, EmpIdentification.LastName, EmpIdentification.DOB, EmpIdentification.Gender, EmpIdentification.Title, EmpAddress.Addtype, EmpAddress.number, EmpAddress.Street, EmpAddress.Unit,EmpAddress.City, EmpAddress.State, EmpAddress.zipcode, EmpCommunication.comtype, EmpCommunication.value,EmpCommunication.preferred FROM EmpIdentification inner join EmpAddress on EmpAddress.EmpID = EmpIdentification.EmpID inner join EmpCommunication on EmpCommunication.EmpID = EmpIdentification.EmpID where EmpIdentification.EmpID =:EmpID</db:sql>
+			<db:input-parameters ><![CDATA[#[{'EmpID':attributes.queryParams.EmpID}]]]></db:input-parameters>
+		</db:select>
+		<logger level="INFO" doc:name="Logger" doc:id="da0e74d4-73fe-4949-83ad-28f3fc11abdc" message="Employee has been selected frmo Database."/>
+	</sub-flow>
+	
+	<sub-flow name="InsertEmployeeRecord" doc:id="d0b97443-d4f9-469f-8369-3eb07023aea6" >
+		<db:insert doc:name="Insert" doc:id="f4fb8e8c-a3fc-48e4-87ea-049dbee886d5" config-ref="Database_Config">
+			<db:sql >INSERT INTO EmpIdentification (EmpID,FirstName, LastName, DOB, Gender, Title) VALUES (:EmpID,:FirstName, :LastName, :DOB, :Gender, :Title)</db:sql>
+			<db:input-parameters ><![CDATA[#[{'EmpID':payload.Identification.EmpID,'FirstName':payload.Identification.FirstName,'LastName':payload.Identification.LastName,'DOB':payload.Identification.DOB as Date {format: 'MM/dd/yyyy'} ,'Gender':payload.Identification.Gender,'Title':payload.Identification.Title
+}]]]></db:input-parameters>
+		</db:insert>
+		<logger level="INFO" doc:name="Logger" doc:id="56a9fbb4-d3de-4e91-9623-098c7ca9abd1" message="Employee record has been added Successfully"/>
+	</sub-flow>
+	
+	<sub-flow name="UpdateEmployeeRecordByEmpID" doc:id="05abf380-32b0-42c8-b25a-f2a310a08654" >
+		<db:update doc:name="Update" doc:id="139ba30a-b6f6-4b7c-9001-4c4e4a07f448" config-ref="Database_Config">
+			<db:sql >UPDATE Empidentification,EmpCommunication,EmpAddress Set Empidentification.FirstName=:FirstName,EmpAddress.street=:street,EmpCommunication.value=:email
+where Empidentification.EmpID=EmpCommunication.EmpID= EmpAddress.EmpID and EmpCommunication.comtype=:comtype</db:sql>
+			<db:input-parameters ><![CDATA[#[{'FirstName':attributes.uriParams.Identification.FirstName,'street':uriParams.Address.street,'value':uriParams.Communication.value,'EmpId':uriParams.EmpId}]]]></db:input-parameters>
+		</db:update>
+		<logger level="INFO" doc:name="Logger" doc:id="0d6e5ed9-cae7-4579-acd3-31864d2587fd" message="Employee record has been added Successfully"/>
+	</sub-flow>
+	
+	<sub-flow name="DeleteEmployeeRecordByEmpID" doc:id="9f756a52-12aa-4daf-b001-f6905c94faff" >
+		<db:delete doc:name="Delete" doc:id="bdb16539-5db9-4da9-9c4a-9c463bc4afe5" config-ref="Database_Config">
+			<db:sql >DELETE EmpAddress, EmpCommunication FROM EmpIdentification INNER JOIN EmpAddress on EmpAddress.EmpID = EmpIdentification.EmpID INNER JOIN EmpCommunication on EmpCommunication.EmpID = EmpIdentification.EmpID  WHERE EmpID =:EmpID</db:sql>
+			<db:input-parameters ><![CDATA[#[{'EmpID':attributes.uriParams.EmpID}]]]></db:input-parameters>
+		</db:delete>
+		<logger level="INFO" doc:name="Logger" doc:id="1982c7ad-af8f-4a60-a8e5-620d5536d8b8" message="Employee records has been deleted Successfully"/>
+	</sub-flow>
+	
+</mule>
