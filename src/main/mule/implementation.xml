@@ -9,16 +9,28 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 	<sub-flow name="GetEmployeeRecord" doc:id="0be0cf03-7e0b-4d75-92c3-cd561cbbbb57" >
 		<db:select doc:name="Select" doc:id="27c2541c-fd9b-4524-986f-486d64896b05" config-ref="Database_Config">
 			<db:sql >SELECT EmpIdentification.FirstName, EmpIdentification.LastName, EmpIdentification.DOB, EmpIdentification.Gender, EmpIdentification.Title, EmpAddress.Addtype, EmpAddress.number, EmpAddress.Street, EmpAddress.Unit,EmpAddress.City, EmpAddress.State, EmpAddress.zipcode, EmpCommunication.comtype, EmpCommunication.value,EmpCommunication.preferred FROM EmpIdentification inner join EmpAddress on EmpAddress.EmpID = EmpIdentification.EmpID inner join EmpCommunication on EmpCommunication.EmpID = EmpIdentification.EmpID where EmpIdentification.EmpID =:EmpID</db:sql>
-			<db:input-parameters ><![CDATA[#[{'EmpID':attributes.queryParams.EmpID}]]]></db:input-parameters>
+			<db:input-parameters ><![CDATA[#[{'EmpID':vars.EmpID}]]]></db:input-parameters>
 		</db:select>
 		<logger level="INFO" doc:name="Logger" doc:id="da0e74d4-73fe-4949-83ad-28f3fc11abdc" message="Employee has been selected frmo Database."/>
 	</sub-flow>
 	
 	<sub-flow name="InsertEmployeeRecord" doc:id="d0b97443-d4f9-469f-8369-3eb07023aea6" >
-		<db:insert doc:name="Insert" doc:id="f4fb8e8c-a3fc-48e4-87ea-049dbee886d5" config-ref="Database_Config">
-			<db:sql >INSERT INTO EmpIdentification (EmpID,FirstName, LastName, DOB, Gender, Title) VALUES (:EmpID,:FirstName, :LastName, :DOB, :Gender, :Title)</db:sql>
+		<db:insert doc:name="Insert" doc:id="f4fb8e8c-a3fc-48e4-87ea-049dbee886d5" config-ref="Database_Config" target="empIdentification">
+			<db:sql >INSERT INTO EmpIdentification (FirstName, LastName, DOB, Gender, Title) VALUES (:FirstName, :LastName, :DOB, :Gender, :Title)</db:sql>
 			<db:input-parameters ><![CDATA[#[{'EmpID':payload.Identification.EmpID,'FirstName':payload.Identification.FirstName,'LastName':payload.Identification.LastName,'DOB':payload.Identification.DOB as Date {format: 'MM/dd/yyyy'} ,'Gender':payload.Identification.Gender,'Title':payload.Identification.Title
 }]]]></db:input-parameters>
+		</db:insert>
+		<db:select doc:name="Select" doc:id="19dec966-0ddb-4db4-b5d2-ca5e7c5d3e94" config-ref="Database_Config" target="maxEmpID">
+			<db:sql >Select max(EmpID) from EmpIdentification</db:sql>
+		</db:select>
+		<db:insert doc:name="Insert" doc:id="00edaeb3-2b56-46dd-a558-f16372cfb86d" config-ref="Database_Config" target="empAddress">
+			<db:sql >INSERT INTO EmpAddress (Addtype,number,street,City,State,zipcode,EmpID) VALUES (:Addtype,:number,street,:City,:State,:zipcode,:EmpID)</db:sql>
+			<db:input-parameters ><![CDATA[#[{'Addtype':payload.Address.Addtype,'number':payload.Address.number,'street':payload.Address.street,'Unit':payload.Address.Unit,'City':payload.Address.City,'State':payload.Address.State,'zipcode':payload.Address.zipcode,'EmpID':vars.maxEmpID
+}]]]></db:input-parameters>
+		</db:insert>
+		<db:insert doc:name="Insert" doc:id="769e11bf-a9a2-43e3-847b-d780c211e21c" config-ref="Database_Config">
+			<db:sql >INSERT INTO EmpCommunication (comtype,value,preferred,EmpID) VALUES (:comtype,:value,:preferred,:EmpID)</db:sql>
+			<db:input-parameters ><![CDATA[#[{'comtype':payload.EmpCommunication.comtype,'value':payload.EmpCommunication.value,'preferred':payload.EmpCommunication.preferred,'EmpID':vars.maxEmpID}]]]></db:input-parameters>
 		</db:insert>
 		<logger level="INFO" doc:name="Logger" doc:id="56a9fbb4-d3de-4e91-9623-098c7ca9abd1" message="Employee record has been added Successfully"/>
 	</sub-flow>
@@ -27,7 +39,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		<db:update doc:name="Update" doc:id="139ba30a-b6f6-4b7c-9001-4c4e4a07f448" config-ref="Database_Config">
 			<db:sql >UPDATE Empidentification,EmpCommunication,EmpAddress Set Empidentification.FirstName=:FirstName,EmpAddress.street=:street,EmpCommunication.value=:email
 where Empidentification.EmpID=EmpCommunication.EmpID= EmpAddress.EmpID and EmpCommunication.comtype=:comtype</db:sql>
-			<db:input-parameters ><![CDATA[#[{'FirstName':attributes.uriParams.Identification.FirstName,'street':uriParams.Address.street,'value':uriParams.Communication.value,'EmpId':uriParams.EmpId}]]]></db:input-parameters>
+			<db:input-parameters ><![CDATA[#[{'FirstName':vars.FirstName,'street':vars.street,'value':vars.value,'EmpId':vars.EmpId}]]]></db:input-parameters>
 		</db:update>
 		<logger level="INFO" doc:name="Logger" doc:id="0d6e5ed9-cae7-4579-acd3-31864d2587fd" message="Employee record has been added Successfully"/>
 	</sub-flow>
@@ -35,7 +47,7 @@ where Empidentification.EmpID=EmpCommunication.EmpID= EmpAddress.EmpID and EmpCo
 	<sub-flow name="DeleteEmployeeRecordByEmpID" doc:id="9f756a52-12aa-4daf-b001-f6905c94faff" >
 		<db:delete doc:name="Delete" doc:id="bdb16539-5db9-4da9-9c4a-9c463bc4afe5" config-ref="Database_Config">
 			<db:sql >DELETE EmpAddress, EmpCommunication FROM EmpIdentification INNER JOIN EmpAddress on EmpAddress.EmpID = EmpIdentification.EmpID INNER JOIN EmpCommunication on EmpCommunication.EmpID = EmpIdentification.EmpID  WHERE EmpID =:EmpID</db:sql>
-			<db:input-parameters ><![CDATA[#[{'EmpID':attributes.uriParams.EmpID}]]]></db:input-parameters>
+			<db:input-parameters ><![CDATA[#[{'EmpID':vars.EmpID}]]]></db:input-parameters>
 		</db:delete>
 		<logger level="INFO" doc:name="Logger" doc:id="1982c7ad-af8f-4a60-a8e5-620d5536d8b8" message="Employee records has been deleted Successfully"/>
 	</sub-flow>

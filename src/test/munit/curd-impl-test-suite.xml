@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+	xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<munit:config name="curd-impl-test-suite.xml" />
+	<munit:test name="curd-impl-test-suite-GetEmployeeRecordTest" description="Test" doc:id="1e4c2496-0581-4615-9bd4-94b13719fe01" >
+		<munit:behavior>
+			<set-variable value="1" doc:name="EmpID" doc:id="ce86397e-e279-49e5-9215-00ffef29fa45" variableName="EmpID"/>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to GetEmployeeRecord" doc:id="86cdfe90-cd11-485b-85e9-be84388c54bd" name="GetEmployeeRecord"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="6c64e0cf-445e-4490-a694-3a3eb4e1270f" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="curd-impl-test-suite-InsertEmployeeRecordTest" description="Test" doc:id="e7950e56-8366-47c7-8d26-16c0c305d5cd" >
+		<munit:behavior >
+			<set-payload value='{
+	"Identification": {
+		"FirstName": "Bob",
+		"LastName": "Frederick",
+		"DOB": "06/21/1980",
+		"Gender": "M",
+		"Title": "Manager"
+	},
+	"Address": [{
+		"Addtype ": "home",
+		"number": 1234,
+		"street": "blah blah St",
+		"Unit": "1 a",
+		"City": "Somewhere",
+		"State": "WV",
+		"zipcode": "12345"
+	}],
+	"Communication": [{
+			"comtype": "email",
+			"value": "bfe@sample.com",
+	  		"preferred" : "true"
+		},
+		{
+			"comtype": "cell",
+			"value": "304-555-8282"
+		}
+	]
+}' doc:name="Data to be inserted" doc:id="28f92df0-7d35-4e6b-aa0d-668d99ec8b28" />
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to InsertEmployeeRecord" doc:id="e47b763e-4959-4c18-a881-5681f9971510" name="InsertEmployeeRecord"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="f9e27bc3-6543-400a-a790-9150acfc931d" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="curd-impl-test-suite-UpdateEmployeeRecordByEmpIDTest" description="Test" doc:id="05d01af9-c9a8-4976-9658-8a0bfc2d96b5" >
+		<munit:behavior>
+			<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" doc:id="c95c9e31-b834-40ef-9d74-02f10f5364b5">
+            <ee:variables>
+                <ee:set-variable variableName="EmpID"><![CDATA[1]]></ee:set-variable>
+				<ee:set-variable variableName="FirstName" ><![CDATA['Russel']]></ee:set-variable>
+				<ee:set-variable variableName="street" ><![CDATA['New York']]></ee:set-variable>
+				<ee:set-variable variableName="value" ><![CDATA[1234]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to UpdateEmployeeRecordByEmpID" doc:id="506e25b3-31cf-4291-9481-9f613534718e" name="UpdateEmployeeRecordByEmpID"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="8f64ad40-c2dc-4a64-bf4c-1a7ebb30365c" expression="#[payload]" is="#[1]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="curd-impl-test-suite-DeleteEmployeeRecordByEmpIDTest" description="Test" doc:id="275307bd-42c2-4796-9513-08da332e9c0d" >
+		<munit:behavior>
+			<set-variable value="1" doc:name="Set Variable" doc:id="78824d51-6e91-4715-8676-3802132bd8ff" variableName="EmpID"/>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to DeleteEmployeeRecordByEmpID" doc:id="b0f8b2b0-06e6-4479-b137-9a4550bfc973" name="DeleteEmployeeRecordByEmpID"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="28c29c07-5193-4ba6-bda5-6fb11364aed4" expression="#[payload]" is="#[1]"/>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

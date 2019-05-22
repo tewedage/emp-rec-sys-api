@@ -138,6 +138,9 @@ output application/json
 		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" doc:id="a506f401-3cf6-4b74-8723-6f28c67373cc">
             <ee:variables>
                 <ee:set-variable variableName="EmpID"><![CDATA[attributes.uriParams.EmpID]]></ee:set-variable>
+				<ee:set-variable variableName="FirstName" ><![CDATA[attributes.uriParams.Identification.FirstName]]></ee:set-variable>
+				<ee:set-variable variableName="street" ><![CDATA[attributes.uriParams.Address.street]]></ee:set-variable>
+				<ee:set-variable variableName="value" ><![CDATA[attributes.uriParams.Communication.value]]></ee:set-variable>
             </ee:variables>
         </ee:transform>
         <flow-ref doc:name="UpdateEmployeeRecordByEmpID" doc:id="0b833ac8-a224-4632-bc2d-837ac2454308" name="UpdateEmployeeRecordByEmpID"/>
@@ -153,9 +156,9 @@ output application/json
         </ee:transform>
     </flow>
     <flow name="delete:\EmployeeRecord\(EmpID):ms3empcontactapi-config">
-		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core">
+		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" doc:id="101c2b38-3061-44e0-9312-c42d55771a96">
             <ee:variables>
-                <ee:set-variable variableName="EmpID">attributes.uriParams.EmpID</ee:set-variable>
+                <ee:set-variable variableName="EmpID"><![CDATA[attributes.uriParams.EmpID]]></ee:set-variable>
             </ee:variables>
         </ee:transform>
         <flow-ref doc:name="DeleteEmployeeRecordByEmpID" doc:id="654657b2-c216-4639-a145-4fcc4830d901" name="DeleteEmployeeRecordByEmpID"/>
@@ -171,6 +174,13 @@ output application/json
         </ee:transform>
     </flow>
     <flow name="get:\EmployeeRecord:ms3empcontactapi-config">
+		<ee:transform doc:name="Transform Message" doc:id="28087695-d4b0-4ef1-a11b-ffd07cb0d288" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="EmpID" ><![CDATA[attributes.queryParams.EmpID]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
 		<flow-ref doc:name="GetEmployeeRecord" doc:id="8d67d47b-af25-451b-9360-629468344568" name="GetEmployeeRecord"/>
 		<ee:transform doc:name="Transform Message" doc:id="949950b6-4018-47bf-a0f0-4381afe95997" >
 			<ee:message >
