@@ -25,7 +25,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 			<db:sql >Select max(EmpID) from EmpIdentification</db:sql>
 		</db:select>
 		<db:insert doc:name="Insert" doc:id="51603556-e6c6-42c9-a369-1ed4ff381fc9" config-ref="Database_Config" target="empAddress">
-			<db:sql >INSERT INTO EmpAddress (Addtype,number,street,City,State,zipcode,EmpID) VALUES (:Addtype,:number,street,:City,:State,:zipcode,:EmpID)</db:sql>
+			<db:sql >INSERT INTO EmpAddress (Addtype,number,street,Unit,City,State,zipcode,EmpID) VALUES (:Addtype,:number,street,:Unit,:City,:State,:zipcode,:EmpID)</db:sql>
 			<db:input-parameters ><![CDATA[#[{'Addtype':payload.Address.Addtype,'number':payload.Address.number,'street':payload.Address.street,'Unit':payload.Address.Unit,'City':payload.Address.City,'State':payload.Address.State,'zipcode':payload.Address.zipcode,'EmpID':vars.maxEmpID
 }]]]></db:input-parameters>
 		</db:insert>

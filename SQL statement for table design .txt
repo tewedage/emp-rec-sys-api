@@ -24,7 +24,7 @@ INSERT INTO EmpIdentification (FirstName, LastName, DOB, Gender, Title) VALUES (
 }]
 
 =============INSERT EmpAddress=========
-INSERT INTO EmpAddress (Addtype,number,street,City,State,zipcode,EmpID) VALUES (:Addtype,:number,street,:City,:State,:zipcode,:EmpID)
+INSERT INTO EmpAddress (Addtype,number,street,Unit,City,State,zipcode,EmpID) VALUES (:Addtype,:number,street,:Unit,:City,:State,:zipcode,:EmpID)
 #[{'Addtype':payload.Address.Addtype,'number':payload.Address.number,'street':payload.Address.street,'Unit':payload.Address.Unit,'City':payload.Address.City,'State':payload.Address.State,'zipcode':payload.Address.zipcode,'EmpID':vars.maxEmpID
 }]
 
