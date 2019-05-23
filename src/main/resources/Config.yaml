@@ -6,4 +6,4 @@ DataBase:
   Port: "3306"
   User: "root"
   Password: "34fekadesabu"
-  Database: "MS3EmpContact_schema"
+  Database: "MS3EmpContact"

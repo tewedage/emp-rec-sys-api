@@ -5,7 +5,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
         <http:listener-connection host="192.168.211.1" port="8081" />
     </http:listener-config>
     <apikit:config name="ms3empcontactapi-config" raml="ms3empcontactapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
-    <flow name="ms3empcontactapi-main">
+    <flow name="Interface">
 		<http:listener config-ref="ms3empcontactapi-httpListenerConfig" path="/api/*" doc:name="Listner">
             <http:response statusCode="#[vars.httpStatus default 200]">
                 <http:headers>#[vars.outboundHeaders default {}]</http:headers>
